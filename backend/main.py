@@ -3,12 +3,19 @@ from pydantic import BaseModel
 import subprocess
 import tempfile
 import os
+from typing import Literal
+
 
 app = FastAPI()
 
 
-class ProofRequest(BaseModel):
-    code: str
+class LLMAnalysis(BaseModel):
+    interpretation: str
+    mathematical_claim: Literal["TRUE", "FALSE", "UNKNOWN"]
+    lean_statement: str | None = None
+    proof: str | None = None
+    counterexample: str | None = None
+    reasoning_summary: str
 
 
 @app.get("/")
@@ -17,14 +24,14 @@ def home():
 
 
 @app.post("/verify")
-def verify(request: ProofRequest):
+def verify(lean_code: str):
 
     with tempfile.NamedTemporaryFile(
         mode="w",
         suffix=".lean",
         delete=False
     ) as f:
-        f.write(request.code)
+        f.write(lean_code)
         file_path = f.name
 
     try:
@@ -54,3 +61,31 @@ def verify(request: ProofRequest):
 
     finally:
         os.remove(file_path)
+
+
+@app.post("/verify-analysis")
+def verify_analysis(analysis: LLMAnalysis):
+
+    if analysis.mathematical_claim != "TRUE":
+        return {
+            "status": "UNKNOWN",
+            "message": "La vérification automatique d'une preuve est utilisée uniquement pour une proposition marquée TRUE."
+        }
+
+    if analysis.lean_statement is None:
+        return {
+            "status": "FORMALIZATION_FAILED"
+        }
+
+    if analysis.proof is None:
+        return {
+            "status": "FORMALIZATION_FAILED"
+        }
+
+    lean_code = f"""
+import Mathlib
+
+example : {analysis.lean_statement} := {analysis.proof}
+"""
+
+    return verify(lean_code)
