@@ -1,0 +1,23 @@
+# Lean / Lake
+**/.lake/
+**/build/
+*.olean
+*.ilean
+
+# Local Mathlib clone
+/mathlib4/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# Environment / secrets
+.env
+.env.*
+
+# VS Code
+.vscode/
+
+# OS
+.DS_Store

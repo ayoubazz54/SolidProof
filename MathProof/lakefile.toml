@@ -1,0 +1,14 @@
+name = "MathProof"
+version = "0.1.0"
+defaultTargets = ["mathproof"]
+
+[[require]]
+name = "mathlib"
+path = "../mathlib4"
+
+[[lean_lib]]
+name = "MathProof"
+
+[[lean_exe]]
+name = "mathproof"
+root = "Main"
